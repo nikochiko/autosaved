@@ -15,7 +15,7 @@
 
 * `asdi` command (short for **a**uto**s**ave**d** **i**nterface):
     * `asdi init`: initialises `autosaved` in a particular directory
-    * `asdi show [X=10]`: shows last X autosaves, with number
+    * `asdi list [X=10]`: list last X autosaves, with number
     * `asdi restore [N]|[Timestamp]`: restores the Nth checkpoint (with confirmation prompt) or
     the checkpoint with given timestamp
     * `asdi save`: save current state as a checkpoint
@@ -40,4 +40,16 @@
 ### Working
 
 * Use [go-git](https://github.com/go-git/go-git) for managing `.autosaved`
+* Diff using `go-git` with the latest autosaved commit for getting number of characters changed
+* Use [spf13/cobra](https://github.com/spf13/cobra) for CLI
 
+### Implementation:
+
+* [] Get `asdi init` to work correctly
+    * [] Initialise `git` repository in `.autosaved`
+    * [] Create first checkpoint
+    * [] Should notify Daemon to watch this directory also (or start a background process itself to keep watching it)
+* [] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
+    * [] Should save all files except .git, with the current timestamp
+    * [] Read configuration to ignore files and directories
+* [] Implement `asdi list`
