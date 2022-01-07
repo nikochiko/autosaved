@@ -45,11 +45,11 @@
 
 ### Implementation:
 
-* [] Get `asdi init` to work correctly
-    * [] Initialise `git` repository in `.autosaved`
-    * [] Create first checkpoint
-    * [] Should notify Daemon to watch this directory also (or start a background process itself to keep watching it)
-* [] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
-    * [] Should save all files except .git, with the current timestamp
-    * [] Read configuration to ignore files and directories
-* [] Implement `asdi list`
+* [ ] Get `asdi init` to work correctly
+    * [ ] Initialise `git` repository in `.autosaved`
+    * [ ] Create first checkpoint
+    * [ ] Should notify Daemon to watch this directory also (or start a background process itself to keep watching it)
+* [ ] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
+    * [ ] Should save all files except .git, with the current timestamp
+    * [ ] Read configuration to ignore files and directories
+* [ ] Implement `asdi list`
