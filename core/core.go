@@ -2,11 +2,11 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/go-git/go-git/v5"
-	gitconfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/index"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -23,11 +23,36 @@ const (
 )
 
 var (
-	ErrNothingToSave = errors.New("Nothing to save")
+	ErrNothingToSave             = errors.New("nothing to save")
+	ErrAutosavedBranchNotCreated = errors.New("autosaved branch for current branch hasn't been created yet")
+	ErrUserUnbornHead            = errors.New("autosaved cannot continue with an unborn head. please make an initial commit and try again")
 )
 
 type AsdRepository struct {
 	Repository *git.Repository
+
+	minSeconds int
+}
+
+// MinimumDuration returns the minimum duration without a commit that will go unsaved
+func (asd *AsdRepository) MinimumDuration() time.Duration {
+	return time.Duration(asd.minSeconds)
+}
+
+// SetMinSeconds is the Setter method for the minSeconds configuration
+func (asd *AsdRepository) SetMinSeconds(s int) error {
+	asd.minSeconds = s
+	return nil
+}
+
+func AsdRepoFromGitRepoPath(gitPath string, minSeconds int) (*AsdRepository, error) {
+	gitRepo, err := git.PlainOpen(gitPath)
+	if err != nil {
+		return nil, err
+	}
+
+	asdRepo := AsdRepository{Repository: gitRepo, minSeconds: minSeconds}
+	return &asdRepo, nil
 }
 
 func (asd *AsdRepository) Save(msg string) error {
@@ -67,9 +92,13 @@ func (asd *AsdRepository) Save(msg string) error {
 
 	head, err := asd.Repository.Head()
 	if err != nil {
+		if err == plumbing.ErrReferenceNotFound {
+			err = ErrUserUnbornHead
+			return err
+		}
+
 		log.Printf("error: %v\n", err)
 		return err
-
 	}
 
 	err = asd.checkoutAutosavedBranch(w, head)
@@ -78,12 +107,10 @@ func (asd *AsdRepository) Save(msg string) error {
 		return err
 	}
 
-	asd.checkoutAutosavedBranch(w, head)
-
 	defer func() {
 		var err2 error
 		if head == nil {
-			err2 = errors.New("head is nil")
+			err2 = ErrUserUnbornHead
 		} else {
 			err2 = checkoutWithKeep(w, head.Name())
 		}
@@ -100,7 +127,6 @@ func (asd *AsdRepository) Save(msg string) error {
 	}
 
 	return nil
-
 }
 
 func (asd *AsdRepository) checkoutAutosavedBranch(w *git.Worktree, head *plumbing.Reference) (err error) {
@@ -123,28 +149,6 @@ func (asd *AsdRepository) checkoutAutosavedBranch(w *git.Worktree, head *plumbin
 	// if branch doesn't exist, create it while checkout
 	coOpts.Create = true
 	return w.Checkout(&coOpts)
-}
-
-func (asd *AsdRepository) GetAutosaveBranch(head *plumbing.Reference) (*gitconfig.Branch, error) {
-	r := asd.Repository
-
-	branchName := getAutosavedBranchName(head)
-
-	// try to return branch if it exists
-	branch, err := r.Branch(branchName)
-	if err == nil {
-		log.Printf("branch %s exists\n", branchName)
-		return branch, nil
-	}
-
-	// create branch if it doesn't exist
-	if errors.Is(err, git.ErrBranchNotFound) {
-		log.Println("creating branch")
-		err = createBranch(r, branchName)
-		return branch, err
-	}
-
-	return nil, err
 }
 
 func getAutosavedBranchName(head *plumbing.Reference) string {
@@ -214,4 +218,143 @@ func checkNothingToSave(s git.Status) bool {
 
 	// nothing to save
 	return true
+}
+
+func (asd *AsdRepository) ShouldSave() (bool, string, error) {
+	userCommit, err := asd.getLastUserCommitOnCurrentBranch()
+	if err != nil {
+		return false, "", err
+	}
+
+	autosavedCommit, err := asd.getLastAutosavedCommitForCurrentBranch()
+	if err != nil {
+		if errors.Is(err, ErrAutosavedBranchNotCreated) {
+			autosavedCommit = nil
+		} else {
+			return false, "", err
+		}
+	}
+
+	shouldSave, reason, err := asd.shouldSaveTimeInterval(userCommit, autosavedCommit)
+	if err != nil {
+		return false, "", err
+	}
+
+	if shouldSave == false {
+		return false, reason, nil
+	}
+
+	shouldSave, reason2, err := asd.shouldSaveDiff(userCommit, autosavedCommit)
+	if err != nil {
+		return false, "", err
+	}
+
+	if reason2 != "" {
+		if reason != "" {
+			reason = reason + " and" + reason2
+		} else {
+			reason = reason2
+		}
+	}
+
+	return true, reason, nil
+}
+
+func (asd *AsdRepository) shouldSaveTimeInterval(userCommit, autosavedCommit *object.Commit) (bool, string, error) {
+	timeSinceLastCommit := time.Now().Sub(userCommit.Author.When)
+	if timeSinceLastCommit < time.Duration(asd.minSeconds)*time.Second {
+		return false, "user has commited during allowed time", nil
+	}
+
+	if autosavedCommit != nil {
+		timeSinceLastAutosavedCommit := time.Now().Sub(autosavedCommit.Author.When)
+		if timeSinceLastAutosavedCommit < time.Duration(asd.minSeconds)*time.Second {
+			return false, "autosaved has commmited during allowed time", nil
+		}
+
+		if timeSinceLastAutosavedCommit > timeSinceLastCommit {
+			timeSinceLastCommit = timeSinceLastAutosavedCommit
+		}
+	}
+
+	return true, fmt.Sprintf("autosave at %s", timeSinceLastCommit.String()), nil
+}
+
+func (asd *AsdRepository) shouldSaveDiff(userCommit, autosavedCommit *object.Commit) (bool, string, error) {
+	r := asd.Repository
+	w, err := r.Worktree()
+	if err != nil {
+		return false, "", err
+	}
+
+	s, err := asd.worktreeStatus(w, userCommit.Hash)
+	if err != nil {
+		return false, "", err
+	}
+
+	if checkNothingToSave(s) {
+		return false, "user commit is up to date", nil
+	}
+
+	if autosavedCommit != nil {
+		s, err = asd.worktreeStatus(w, autosavedCommit.Hash)
+		if err != nil {
+			return false, "", err
+		}
+
+		if checkNothingToSave(s) {
+			return false, "autosaved commit is up to date", nil
+		}
+	}
+
+	return true, "", nil
+}
+
+func (asd *AsdRepository) getLastUserCommitOnCurrentBranch() (*object.Commit, error) {
+	r := asd.Repository
+
+	head, err := r.Head()
+	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return nil, ErrUserUnbornHead
+		}
+
+		return nil, err
+	}
+
+	headCommit, err := r.CommitObject(head.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	return headCommit, nil
+}
+
+func (asd *AsdRepository) getLastAutosavedCommitForCurrentBranch() (*object.Commit, error) {
+	r := asd.Repository
+
+	head, err := r.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	branch := getAutosavedBranchName(head)
+	refname := plumbing.NewBranchReferenceName(branch)
+
+	ref, err := r.Storer.Reference(refname)
+	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			// autosaved branch doesn't exist yet
+			return nil, ErrAutosavedBranchNotCreated
+		}
+
+		return nil, err
+	}
+
+	commit, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	return commit, nil
 }

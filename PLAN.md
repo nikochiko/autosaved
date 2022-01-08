@@ -44,3 +44,15 @@
 * [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
+* [ ] Autosave Daemon
+    * [ ] `asdi start`
+    * [ ] `asdi stop`
+    * [ ] `asdi restart`
+    * [ ] lockfile
+    * [ ] configuration
+* [ ] `asdi setup`: one time setup for getting config ready
+* [ ] `.autosaved.yaml` for each repository
+
+* `asdi start`
+    * Will read watched files from viper config, iterating over it at intervals of checkInterval
+    * Use select-case to block while listening for config and sleep timeout
