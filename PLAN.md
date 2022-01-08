@@ -38,9 +38,9 @@
 
 ### Implementation:
 
-* [ ] Get `asdi watch` to work correctly
-    * [ ] Create first checkpoint
-    * [ ] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
+* [x] Get `asdi watch` to work correctly
+    * [x] Create first checkpoint
+    * [x] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
 * [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
@@ -61,4 +61,4 @@
 * [ ] Don't autocommit when branch checkout out is autosaved's branch
 * [x] `asdi stop` - send SIGTERM to lock process
 * [ ] ~~`asdi restart` - stop and start~~ not need, config updates happen on the fly!
-* [ ] `asdi watch` - add pwd to 
+* [x] `asdi watch` - add pwd to config
