@@ -17,7 +17,7 @@ Will error if there is it isn't running already`,
 }
 
 func stop(cmd *cobra.Command, args []string) {
-	minSeconds := globalViper.GetInt("minSeconds")
+	minSeconds := getMinSeconds()
 
 	d, err := daemon.New(globalViper, lockfilePath, os.Stdout, os.Stderr, minSeconds)
 	cobra.CheckErr(err)

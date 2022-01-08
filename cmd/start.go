@@ -17,7 +17,7 @@ Will error if there is already a daemon running`,
 }
 
 func start(cmd *cobra.Command, args []string) {
-	minSeconds := globalViper.GetInt("minSeconds")
+	minSeconds := getMinSeconds()
 
 	asdFmt.Successf("Initialising autosave daemon\n")
 	d, err := daemon.New(globalViper, lockfilePath, os.Stdout, os.Stderr, minSeconds)

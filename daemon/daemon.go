@@ -18,11 +18,18 @@ import (
 )
 
 const (
-	checkingIntervalKey     = "checkingInterval"
+	checkingIntervalKey     = "checking_interval"
 	defaultCheckingInterval = 120
 
 	reposKey = "repositories"
+
+	afterMinutesKey = "after_every.minutes"
+	afterSecondsKey = "after_every.seconds"
 )
+
+func getMinimumSeconds(minutes, seconds int) int {
+	return minutes*60 + seconds
+}
 
 var (
 	ErrCheckingIntervalNegative = errors.New("negative checking interval is not allowed")
@@ -190,6 +197,10 @@ func (d *Daemon) LoadConfig() error {
 	if err != nil {
 		return err
 	}
+
+	afterMinutes := d.viper.GetInt(afterMinutesKey)
+	afterSeconds := d.viper.GetInt(afterSecondsKey)
+	d.minSeconds = getMinimumSeconds(afterMinutes, afterSeconds)
 
 	repos := d.viper.GetStringSlice(reposKey)
 

@@ -14,7 +14,8 @@ var (
 	// used for flags
 	cfgFile      string
 	lockfilePath string
-	minSeconds   int
+	afterMinutes int
+	afterSeconds int
 )
 
 var globalViper = viper.GetViper()
@@ -50,10 +51,12 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.autosaved.yaml)")
-	rootCmd.PersistentFlags().IntVar(&minSeconds, "minSeconds", 120, "Minimum number of seconds to wait before autosaving after the previous one")
+	rootCmd.PersistentFlags().IntVar(&afterMinutes, "after_minutes", 2, "Minutes to wait, at a minimum, before making the next autosave. after_every.seconds gets added in this")
+	rootCmd.PersistentFlags().IntVar(&afterSeconds, "after_seconds", 0, "Seconds to wait, at a minimum, before making the next autosave. after_every.minutes gets added in this")
 	rootCmd.PersistentFlags().StringVar(&lockfilePath, "lockfilePath", "", "Lockfile for the daemon")
 
-	viper.BindPFlag("minSeconds", rootCmd.PersistentFlags().Lookup("minSeconds"))
+	viper.BindPFlag("after_every.minutes", rootCmd.PersistentFlags().Lookup("after_minutes"))
+	viper.BindPFlag("after_every.seconds", rootCmd.PersistentFlags().Lookup("after_seconds"))
 
 	rootCmd.AddCommand(saveCmd)
 	saveCmd.Flags().StringP("message", "m", "manual save", "commit message (default: 'manual save')")
@@ -90,4 +93,8 @@ func initConfig() {
 		fmt.Println("Config file not found. Writing config to file now")
 		viper.SafeWriteConfig()
 	}
+}
+
+func getMinSeconds() int {
+	return 60*afterMinutes + afterSeconds
 }

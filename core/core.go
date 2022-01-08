@@ -52,6 +52,7 @@ func AsdRepoFromGitRepoPath(gitPath string, minSeconds int) (*AsdRepository, err
 	}
 
 	asdRepo := AsdRepository{Repository: gitRepo, minSeconds: minSeconds}
+	fmt.Printf("Min Seconds: %d\n", minSeconds)
 	return &asdRepo, nil
 }
 
