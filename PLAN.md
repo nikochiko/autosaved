@@ -41,6 +41,6 @@
 * [ ] Get `asdi init` to work correctly
     * [ ] Create first checkpoint
     * [ ] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
-* [ ] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
+* [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
