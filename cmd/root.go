@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -83,5 +84,8 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else if reflect.TypeOf(err) == reflect.TypeOf(viper.ConfigFileNotFoundError{}) {
+		fmt.Println("Config file not found. Writing config to file now")
+		viper.SafeWriteConfig()
 	}
 }
