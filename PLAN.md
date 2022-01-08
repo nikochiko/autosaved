@@ -44,7 +44,7 @@
 * [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
-* [ ] Autosave Daemon
+* [x] Autosave Daemon
     * [x] `asdi start`
     * [x] `asdi stop`
     * ~~[ ] `asdi restart`~~ not need, config updates happen on the fly!
