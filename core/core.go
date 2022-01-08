@@ -272,7 +272,7 @@ func (asd *AsdRepository) shouldSaveTimeInterval(userCommit, autosavedCommit *ob
 			return false, "autosaved has commmited during allowed time", nil
 		}
 
-		if timeSinceLastAutosavedCommit > timeSinceLastCommit {
+		if timeSinceLastAutosavedCommit < timeSinceLastCommit {
 			timeSinceLastCommit = timeSinceLastAutosavedCommit
 		}
 	}

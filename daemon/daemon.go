@@ -111,17 +111,16 @@ func (d *Daemon) Start() error {
 }
 
 func (d *Daemon) CheckAllRepos() error {
-	fmt.Fprintf(d.outWriter, "Info: checking all repositories")
+	fmt.Fprintf(d.errWriter, "Info: checking all repositories\n")
 
 	for path, repo := range d.repositories {
 		err := d.CheckRepo(path, repo)
 		if err != nil {
-			if !errors.Is(err, core.ErrNothingToSave) {
-				fmt.Fprintf(d.errWriter, "Debug: nothing to save in repo %s\n", path)
+			if errors.Is(err, core.ErrNothingToSave) {
+				fmt.Fprintf(d.errWriter, "Info: Nothing to save in %s\n", path)
 				continue
-			} else {
-				return err
 			}
+			return err
 		}
 	}
 
@@ -135,6 +134,7 @@ func (d *Daemon) CheckRepo(path string, asdRepo *core.AsdRepository) error {
 	}
 
 	if shouldSave {
+		fmt.Fprintf(d.errWriter, "Info: autosaving repository %s\n", path)
 		return asdRepo.Save(reason)
 	}
 
@@ -149,7 +149,6 @@ func (d *Daemon) LoadConfig() error {
 	}
 
 	checkingInterval = d.viper.GetInt(checkingIntervalKey)
-
 	err := d.setCheckingIntervalSeconds(checkingInterval)
 	if err != nil {
 		return err
@@ -182,7 +181,7 @@ func (d *Daemon) teardown() {
 }
 
 func New(viper *viperPkg.Viper, lockfilePath string, wOut, wErr io.Writer, minSeconds int) (*Daemon, error) {
-	d := &Daemon{viper: viper, lockfilePath: lockfilePath, errWriter: wErr, outWriter: wOut}
+	d := &Daemon{viper: viper, lockfilePath: lockfilePath, errWriter: wErr, outWriter: wOut, minSeconds: minSeconds}
 	err := d.LoadConfig()
 	if err != nil {
 		return nil, err
