@@ -46,7 +46,7 @@
 * [ ] Implement `asdi list`
 * [ ] Autosave Daemon
     * [x] `asdi start`
-    * [ ] `asdi stop`
+    * [x] `asdi stop`
     * [ ] `asdi restart`
     * [x] lockfile
     * [x] configuration
@@ -59,6 +59,6 @@
 
 ### TODO
 * [ ] Don't autocommit when branch checkout out is autosaved's branch
-* [ ] `asdi stop` - send SIGKILL to lock process
+* [x] `asdi stop` - send SIGTERM to lock process
 * [ ] `asdi restart` - stop and start
 * [ ] `asdi watch` - add pwd to 

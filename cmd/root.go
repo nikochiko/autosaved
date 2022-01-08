@@ -59,6 +59,8 @@ func init() {
 	saveCmd.Flags().StringP("message", "m", "manual save", "commit message (default: 'manual save')")
 
 	rootCmd.AddCommand(startCmd)
+
+	rootCmd.AddCommand(stopCmd)
 }
 
 func initConfig() {

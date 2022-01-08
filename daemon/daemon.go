@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"git.kausm.in/kaustubh/autosaved/core"
@@ -26,6 +27,7 @@ const (
 var (
 	ErrCheckingIntervalNegative = errors.New("negative checking interval is not allowed")
 	ErrDaemonAlreadyRunning     = errors.New("it seems like the autosave daemon is already running")
+	ErrDaemonNotRunning         = errors.New("it seems like the autosave daemon is not running")
 )
 
 type Daemon struct {
@@ -63,7 +65,7 @@ func (d *Daemon) Repositories() map[string]*core.AsdRepository {
 }
 
 func (d *Daemon) Start() error {
-	go d.listenForAndHandleInterrupt()
+	go d.listenForAndHandleClosingSignals()
 
 	d.started = true
 
@@ -123,6 +125,26 @@ func (d *Daemon) Start() error {
 	}
 
 	return nil
+}
+
+func (d *Daemon) Stop() error {
+	// check for lockfile
+	lock, err := lockfile.New(d.lockfilePath)
+	if err != nil {
+		return err
+	}
+
+	proc, err := lock.GetOwner()
+	if err != nil {
+		if os.IsNotExist(err) || errors.Is(err, lockfile.ErrDeadOwner) {
+			return ErrDaemonNotRunning
+		}
+
+		return err
+	}
+
+	err = proc.Signal(syscall.SIGTERM)
+	return err
 }
 
 func (d *Daemon) CheckAllRepos() error {
@@ -210,9 +232,9 @@ func New(viper *viperPkg.Viper, lockfilePath string, wOut, wErr io.Writer, minSe
 	return d, nil
 }
 
-func (d *Daemon) listenForAndHandleInterrupt() {
+func (d *Daemon) listenForAndHandleClosingSignals() {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	for _ = range c {
 		d.cancel()
 	}
