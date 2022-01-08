@@ -47,7 +47,7 @@
 * [ ] Autosave Daemon
     * [x] `asdi start`
     * [x] `asdi stop`
-    * [ ] `asdi restart`
+    * ~~[ ] `asdi restart`~~ not need, config updates happen on the fly!
     * [x] lockfile
     * [x] configuration
 * [ ] ~~`asdi setup`: one time setup for getting config ready~~
@@ -60,5 +60,5 @@
 ### TODO
 * [ ] Don't autocommit when branch checkout out is autosaved's branch
 * [x] `asdi stop` - send SIGTERM to lock process
-* [ ] `asdi restart` - stop and start
+* [ ] ~~`asdi restart` - stop and start~~ not need, config updates happen on the fly!
 * [ ] `asdi watch` - add pwd to 
