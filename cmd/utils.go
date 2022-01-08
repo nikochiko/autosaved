@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fatih/color"
 )
@@ -32,4 +33,11 @@ var asdFmt = coloredOutput{
 	Sprintf:   fmt.Sprintf,
 	Ssuccessf: successDisplay.SprintfFunc(),
 	Swarnf:    warnDisplay.SprintfFunc(),
+}
+
+func checkError(err error) {
+	if err != nil {
+		asdFmt.Errorf("Errorf: %v\n", err)
+		os.Exit(1)
+	}
 }

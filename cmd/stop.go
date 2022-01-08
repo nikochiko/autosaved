@@ -20,12 +20,12 @@ func stop(cmd *cobra.Command, args []string) {
 	minSeconds := getMinSeconds()
 
 	d, err := daemon.New(globalViper, lockfilePath, os.Stdout, os.Stderr, minSeconds)
-	cobra.CheckErr(err)
+	checkError(err)
 
 	asdFmt.Successf("Stopping autosave daemon\n")
 	err = d.Stop()
 	if err != nil {
-		cobra.CheckErr(err)
+		checkError(err)
 	}
 	asdFmt.Successf("Stopped daemon successfully\n")
 }

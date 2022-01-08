@@ -6,11 +6,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/index"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/jinzhu/copier"
+	"github.com/xeonx/timeago"
 )
 
 // start name with _ because it is the lowest alphabetically, therefore
@@ -357,4 +359,113 @@ func (asd *AsdRepository) getLastAutosavedCommitForCurrentBranch() (*object.Comm
 	}
 
 	return commit, nil
+}
+
+func (asd *AsdRepository) List(limit int) error {
+	r := asd.Repository
+
+	// asdCommit, err := asd.getLastAutosavedCommitForCurrentBranch()
+	// if err != nil {
+	// 	if !errors.Is(err, ErrAutosavedBranchNotCreated) {
+	// 		return err
+	// 	}
+	// }
+
+	userCommit, err := asd.getLastUserCommitOnCurrentBranch()
+	if err != nil {
+		return err
+	}
+
+	// var fromCommit *object.Commit
+	// if asdCommit == nil {
+	// 	fromCommit = userCommit
+	// } else {
+	// 	isAncestor, err := userCommit.IsAncestor(asdCommit)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	if isAncestor {
+	// 		fromCommit = asdCommit
+	// 	} else {
+	// 		fromCommit = userCommit
+	// 	}
+	// }
+
+	serialNumber := 0
+
+	// iter := object.NewCommitPostorderIter(fromCommit, nil)
+	iter := object.NewCommitIterBSF(userCommit, nil, nil)
+	for i := 0; i < limit; i++ {
+		c, err := iter.Next()
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(formatCommit(0, c))
+
+		asdBranchName := AutosavedBranchPrefix + c.Hash.String()
+
+		refName := plumbing.NewBranchReferenceName(asdBranchName)
+		ref, err := r.Reference(refName, true)
+		if err != nil {
+			if errors.Is(err, plumbing.ErrReferenceNotFound) {
+				continue
+			}
+
+			return err
+		}
+
+		asdFromCommit, err := r.CommitObject(ref.Hash())
+		if err != nil {
+			return err
+		}
+
+		asdIter := object.NewCommitIterBSF(asdFromCommit, nil, nil)
+		fmt.Println("\tAutosaves:")
+		for i = i; i < limit; i++ {
+			asdCommit, err := asdIter.Next()
+			if err != nil {
+				return err
+			}
+
+			if asdCommit.Committer.Name != autosavedSignatureName {
+				break
+			}
+
+			serialNumber++
+			fmt.Println(shortFormatCommit("\t", serialNumber, asdCommit))
+		}
+	}
+
+	// 	if c.Committer.Name == autosavedSignatureName {
+	// 		fmt.Println(shortFormatCommit("\t", serialNumber, c))
+	// 	} else {
+	// 		fmt.Println(formatCommit(0, c))
+	// 	}
+	// }
+
+	return nil
+}
+
+func (asd *AsdRepository) ListOnCurrentBranch(limit int) error {
+	return nil
+}
+
+func formatCommit(serialNumber int, commit *object.Commit) string {
+	commitLine := color.New(color.FgYellow).Sprintf(fmt.Sprintf("%d\tcommit\t%s", serialNumber, commit.Hash.String()))
+	authorLine := fmt.Sprintf("Author:\t%s <%s>", commit.Author.Name, commit.Author.Email)
+	// dateLine := fmt.Sprintf("When:\t%s", commit.Author.When.Format(time.UnixDate))
+	dateLine := fmt.Sprintf("Date:\t%s", timeago.English.Format(commit.Author.When))
+	msgLine := fmt.Sprintf("\t%s", commit.Message)
+
+	return fmt.Sprintf("%s\n%s\n%s\n\n%s", commitLine, authorLine, dateLine, msgLine)
+}
+
+func shortFormatCommit(prefix string, serialNumber int, commit *object.Commit) string {
+	commitLine := prefix + color.New(color.FgYellow).Sprintf("%d\t%s", serialNumber, commit.Hash.String())
+	whenLine := prefix + fmt.Sprintf("When:\t%s", timeago.English.Format(commit.Author.When))
+	msgLine := prefix + fmt.Sprintf("\t%s", commit.Message)
+
+	return fmt.Sprintf("%s\n%s\n%s\n", commitLine, whenLine, msgLine)
 }

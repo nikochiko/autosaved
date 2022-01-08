@@ -33,7 +33,7 @@ func save(cmd *cobra.Command, args []string) {
 	gitRepo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		asdFmt.Errorf("Couldn't access Git repository: %v\n", err)
-		cobra.CheckErr(err) // exits with 1 exit code if err != nil
+		checkError(err) // exits with 1 exit code if err != nil
 	}
 
 	asdRepo := core.AsdRepository{
@@ -41,7 +41,7 @@ func save(cmd *cobra.Command, args []string) {
 	}
 
 	err = asdRepo.Save(msg)
-	cobra.CheckErr(err)
+	checkError(err)
 
 	asdFmt.Successf("Saved successfully\n")
 }

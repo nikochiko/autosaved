@@ -66,6 +66,8 @@ func init() {
 	rootCmd.AddCommand(stopCmd)
 
 	rootCmd.AddCommand(watchCmd)
+
+	rootCmd.AddCommand(listCmd)
 }
 
 func initConfig() {

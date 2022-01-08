@@ -21,11 +21,11 @@ func start(cmd *cobra.Command, args []string) {
 
 	asdFmt.Successf("Initialising autosave daemon\n")
 	d, err := daemon.New(globalViper, lockfilePath, os.Stdout, os.Stderr, minSeconds)
-	cobra.CheckErr(err)
+	checkError(err)
 
 	asdFmt.Successf("Starting autosave daemon\n")
 	err = d.Start()
 	if err != nil {
-		cobra.CheckErr(err)
+		checkError(err)
 	}
 }

@@ -27,12 +27,12 @@ func watch(cmd *cobra.Command, args []string) {
 	if !filepath.IsAbs(path) {
 		var err error
 		path, err = filepath.Abs(path)
-		cobra.CheckErr(err)
+		checkError(err)
 	}
 
 	if _, err := os.Stat(filepath.Join(path, ".git")); err != nil {
 		asdFmt.Errorf("Path (or current directory) should have a Git repository\n")
-		cobra.CheckErr(err)
+		checkError(err)
 	}
 
 	if contains(repositories, path) {
@@ -43,7 +43,7 @@ func watch(cmd *cobra.Command, args []string) {
 	repositories = append(repositories, path)
 	globalViper.Set("repositories", repositories)
 	err := globalViper.WriteConfig()
-	cobra.CheckErr(err)
+	checkError(err)
 
 	asdFmt.Successf("Repo added to autosaved\n")
 }
