@@ -2,7 +2,7 @@
 
 ### Overview
 
-* Keep a `.autosaved` in project with Git setup inside it.
+* Prefix git commits with `` to distinguish them from normal commits
 * Configuration:
     * Add checkpoint every:
         * per x words
@@ -39,16 +39,15 @@
 
 ### Working
 
-* Use [go-git](https://github.com/go-git/go-git) for managing `.autosaved`
+* Use [go-git](https://github.com/go-git/go-git) for managing autosaved
 * Diff using `go-git` with the latest autosaved commit for getting number of characters changed
 * Use [spf13/cobra](https://github.com/spf13/cobra) for CLI
 
 ### Implementation:
 
 * [ ] Get `asdi init` to work correctly
-    * [ ] Initialise `git` repository in `.autosaved`
     * [ ] Create first checkpoint
-    * [ ] Should notify Daemon to watch this directory also (or start a background process itself to keep watching it)
+    * [ ] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
 * [ ] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [ ] Should save all files except .git, with the current timestamp
     * [ ] Read configuration to ignore files and directories
