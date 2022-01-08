@@ -29,12 +29,6 @@
         words: 10
         minutes: 2
       store_checkpoints: 10 # keep last 10 checkpoints
-      ignore_types:
-        - .git/
-        - *.docx
-        - *.db
-        - *.pyc
-        - *.xlsx
       ```
 
 ### Working
@@ -49,6 +43,5 @@
     * [ ] Create first checkpoint
     * [ ] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
 * [ ] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
-    * [ ] Should save all files except .git, with the current timestamp
-    * [ ] Read configuration to ignore files and directories
+    * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
