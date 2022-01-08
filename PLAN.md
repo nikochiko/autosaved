@@ -38,7 +38,7 @@
 
 ### Implementation:
 
-* [ ] Get `asdi init` to work correctly
+* [ ] Get `asdi watch` to work correctly
     * [ ] Create first checkpoint
     * [ ] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
 * [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
@@ -50,9 +50,15 @@
     * [ ] `asdi restart`
     * [x] lockfile
     * [x] configuration
-* [ ] `asdi setup`: one time setup for getting config ready
-* [ ] `.autosaved.yaml` for each repository
+* [ ] ~~`asdi setup`: one time setup for getting config ready~~
+* [ ] [LATER] `.autosaved.yaml` for each repository
 
 * `asdi start`
     * Will read watched files from viper config, iterating over it at intervals of checkInterval
     * Use select-case to block while listening for config and sleep timeout
+
+### TODO
+* [ ] Don't autocommit when branch checkout out is autosaved's branch
+* [ ] `asdi stop` - send SIGKILL to lock process
+* [ ] `asdi restart` - stop and start
+* [ ] `asdi watch` - add pwd to 
