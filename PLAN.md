@@ -45,11 +45,11 @@
     * [x] Should save all files except .git, with the current timestamp
 * [ ] Implement `asdi list`
 * [ ] Autosave Daemon
-    * [ ] `asdi start`
+    * [x] `asdi start`
     * [ ] `asdi stop`
     * [ ] `asdi restart`
-    * [ ] lockfile
-    * [ ] configuration
+    * [x] lockfile
+    * [x] configuration
 * [ ] `asdi setup`: one time setup for getting config ready
 * [ ] `.autosaved.yaml` for each repository
 

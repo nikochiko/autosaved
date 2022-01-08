@@ -1,9 +1,12 @@
 package daemon
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"os/signal"
 	"time"
 
 	"git.kausm.in/kaustubh/autosaved/core"
@@ -33,6 +36,8 @@ type Daemon struct {
 
 	configUpdateChannel chan bool
 	started             bool
+	ctx                 context.Context
+	cancel              context.CancelFunc
 
 	checkingInterval time.Duration
 	repositories     map[string]*core.AsdRepository
@@ -58,6 +63,8 @@ func (d *Daemon) Repositories() map[string]*core.AsdRepository {
 }
 
 func (d *Daemon) Start() error {
+	go d.listenForAndHandleInterrupt()
+
 	d.started = true
 
 	defer func() {
@@ -83,6 +90,11 @@ func (d *Daemon) Start() error {
 	defer func() {
 		if err = lock.Unlock(); err != nil {
 			fmt.Fprintf(d.errWriter, "unable to unlock lockfile due to err: %v\n", err)
+		} else {
+			err = os.Remove(d.lockfilePath)
+			if err == nil {
+				fmt.Fprintf(d.errWriter, "Debug: removed lockfile")
+			}
 		}
 	}()
 
@@ -104,6 +116,9 @@ func (d *Daemon) Start() error {
 			if err != nil {
 				return err
 			}
+		case <-d.ctx.Done():
+			fmt.Fprintf(d.errWriter, "Info: Gracefully shutting down daemon\n")
+			return nil
 		}
 	}
 
@@ -176,12 +191,15 @@ func (d *Daemon) LoadConfig() error {
 
 // teardown does some necessary cleanup, like closing channels
 func (d *Daemon) teardown() {
-	<-d.configUpdateChannel
+	d.cancel()
+	close(d.configUpdateChannel)
 	d.started = false
 }
 
 func New(viper *viperPkg.Viper, lockfilePath string, wOut, wErr io.Writer, minSeconds int) (*Daemon, error) {
-	d := &Daemon{viper: viper, lockfilePath: lockfilePath, errWriter: wErr, outWriter: wOut, minSeconds: minSeconds}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	d := &Daemon{viper: viper, lockfilePath: lockfilePath, errWriter: wErr, outWriter: wOut, ctx: ctx, cancel: cancel, minSeconds: minSeconds}
 	err := d.LoadConfig()
 	if err != nil {
 		return nil, err
@@ -190,4 +208,12 @@ func New(viper *viperPkg.Viper, lockfilePath string, wOut, wErr io.Writer, minSe
 	d.configUpdateChannel = make(chan bool)
 
 	return d, nil
+}
+
+func (d *Daemon) listenForAndHandleInterrupt() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	for _ = range c {
+		d.cancel()
+	}
 }
