@@ -28,7 +28,6 @@
       after_every:
         words: 10
         minutes: 2
-      store_checkpoints: 10 # keep last 10 checkpoints
       ```
 
 ### Working

@@ -26,14 +26,11 @@ var (
 	ErrNothingToSave = errors.New("Nothing to save")
 )
 
-type Autosaved struct {
+type AsdRepository struct {
 	Repository *git.Repository
-
-	MinChars   int
-	MinMinutes int
 }
 
-func (asd *Autosaved) Save(msg string) error {
+func (asd *AsdRepository) Save(msg string) error {
 	w, err := asd.Repository.Worktree()
 	if err != nil {
 		log.Printf("error: %v\n", err)
@@ -106,7 +103,7 @@ func (asd *Autosaved) Save(msg string) error {
 
 }
 
-func (asd *Autosaved) checkoutAutosavedBranch(w *git.Worktree, head *plumbing.Reference) (err error) {
+func (asd *AsdRepository) checkoutAutosavedBranch(w *git.Worktree, head *plumbing.Reference) (err error) {
 	branchName := getAutosavedBranchName(head)
 
 	// try to checkout the branch
@@ -128,7 +125,7 @@ func (asd *Autosaved) checkoutAutosavedBranch(w *git.Worktree, head *plumbing.Re
 	return w.Checkout(&coOpts)
 }
 
-func (asd *Autosaved) GetAutosaveBranch(head *plumbing.Reference) (*gitconfig.Branch, error) {
+func (asd *AsdRepository) GetAutosaveBranch(head *plumbing.Reference) (*gitconfig.Branch, error) {
 	r := asd.Repository
 
 	branchName := getAutosavedBranchName(head)
