@@ -25,15 +25,13 @@ Once you have the binary, you can just `mv` it to a bin/ folder.
 sudo mv asdi_linux_amd64 /usr/local/bin/asdi
 ```
 
-That's all about it. No other setup needed ;)
+That's all about it. The only other setup now is to start the daemon ;)
 
 ### Setup
 
 To get it working, you'll have to setup the daemon first. It can be
-activated with `asdi start`, but you may want to run it on
-`systemd` or `screen` or another environment which will keep it
-alive after failures and start again after a restart so that you don't have to
-do it manually.
+activated with `asdi start` in any normal terminal, but you may want to run it on
+`systemd` or `screen` to keep it alive through failures and restarts.
 
 Once that's done you're all ready. Just `cd` into your project
 directory and run `asdi watch`, this will notify the daemon to start
@@ -41,6 +39,10 @@ watching the directory.
 
 It does so by adding the repository's full path to the configuration (by default ~/.autosaved.yaml), which gets picked up by
 Viper on the fly.
+
+### Systemd configuration
+
+A sample systemd unit file can be found here: [autosaved.service](autosaved.service). 
 
 To add it to systemd, you can do the following steps:
 
