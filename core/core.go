@@ -1,9 +1,12 @@
 package core
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -28,6 +31,8 @@ var (
 	ErrNothingToSave             = errors.New("nothing to save")
 	ErrAutosavedBranchNotCreated = errors.New("autosaved branch for current branch hasn't been created yet")
 	ErrUserUnbornHead            = errors.New("autosaved cannot continue with an unborn head. please make an initial commit and try again")
+	ErrInvalidHash               = errors.New("the hash submitted is not a valid hash")
+	ErrUserDidNotConfirm         = errors.New("user didn't confirm yes")
 )
 
 type AsdRepository struct {
@@ -251,9 +256,13 @@ func (asd *AsdRepository) ShouldSave() (bool, string, error) {
 		return false, "", err
 	}
 
+	if shouldSave == false {
+		return false, reason2, nil
+	}
+
 	if reason2 != "" {
 		if reason != "" {
-			reason = reason + " and" + reason2
+			reason = reason + " and " + reason2
 		} else {
 			reason = reason2
 		}
@@ -448,7 +457,90 @@ func (asd *AsdRepository) List(limit int) error {
 	return nil
 }
 
-func (asd *AsdRepository) ListOnCurrentBranch(limit int) error {
+func (asd *AsdRepository) RestoreByCommitHash(hashString string) error {
+	if !plumbing.IsHash(hashString) {
+		return ErrInvalidHash
+	}
+
+	hash := plumbing.NewHash(hashString)
+
+	color.New(color.FgCyan).Printf("\nTip: you can run `git diff HEAD..%s` to confirm your changes\n", hash.String())
+
+	questionString := color.New(color.FgYellow).Sprintf(`Are you sure you want to restore to checkpoint %s?`, hashString[:6])
+
+	if askForConfirmation(questionString) {
+		return asd.restoreCheckpoint(hash)
+	} else {
+		return ErrUserDidNotConfirm
+	}
+}
+
+func askForConfirmation(s string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("%s [y/n]: ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
+}
+
+func (asd *AsdRepository) restoreCheckpoint(commit plumbing.Hash) error {
+	r := asd.Repository
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	// make note of the current head ref
+	head, err := r.Head()
+	if err != nil {
+		if err == plumbing.ErrReferenceNotFound {
+			err = ErrUserUnbornHead
+			return err
+		}
+
+		log.Printf("error: %v\n", err)
+		return err
+	}
+
+	// force checkout to that commit
+	coOpts := git.CheckoutOptions{
+		Hash:  commit,
+		Force: true,
+	}
+	err = w.Checkout(&coOpts)
+	if err != nil {
+		return err
+	}
+
+	// git reset soft
+	resetOpts := git.ResetOptions{
+		Mode:   git.SoftReset,
+		Commit: head.Hash(),
+	}
+	err = w.Reset(&resetOpts)
+	if err != nil {
+		return err
+	}
+
+	// git checkout to head with keep
+	err = checkoutWithKeep(w, head.Name())
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

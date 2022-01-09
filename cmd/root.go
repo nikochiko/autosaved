@@ -22,7 +22,7 @@ var globalViper = viper.GetViper()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "autosaved",
+	Use:   "asdi",
 	Short: "Never lose your work. Code without worrying",
 	Long: `autosaved, pronounced autosave-d (for autosave daemon) is a utility written in Go to autosave progress on code projects.
 
@@ -68,6 +68,8 @@ func init() {
 	rootCmd.AddCommand(watchCmd)
 
 	rootCmd.AddCommand(listCmd)
+
+	rootCmd.AddCommand(restoreCmd)
 }
 
 func initConfig() {
