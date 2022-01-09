@@ -16,7 +16,7 @@
 * `asdi` command (short for **a**uto**s**ave**d** **i**nterface):
     * `asdi init`: initialises `autosaved` in a particular directory
     * `asdi list [X=10]`: list last X autosaves, with number
-    * `asdi restore [N]|[Timestamp]`: restores the Nth checkpoint (with confirmation prompt) or
+    * `asdi restore commit-hash`: restores the Nth checkpoint (with confirmation prompt) or
     the checkpoint with given timestamp
     * `asdi save`: save current state as a checkpoint
     * `asdi diff [N]|[Timestamp]`: diff `autosaved` checkpoint with current state of the index
@@ -43,7 +43,7 @@
     * [x] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
 * [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
-* [ ] Implement `asdi list`
+* [x] Implement `asdi list`
 * [x] Autosave Daemon
     * [x] `asdi start`
     * [x] `asdi stop`
