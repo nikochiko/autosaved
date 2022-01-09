@@ -1,0 +1,13 @@
+[Unit]
+Description=autosaved - never lose your work
+
+[Service]
+User=kaustubh # your own pc username
+Group=kaustubh # your own pc username
+ExecStart=/usr/local/bin/asdi start
+ExecStop=/usr/local/bin/asdi stop
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
