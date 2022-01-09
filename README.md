@@ -42,6 +42,28 @@ watching the directory.
 It does so by adding the repository's full path to the configuration (by default ~/.autosaved.yaml), which gets picked up by
 Viper on the fly.
 
+To add it to systemd, you can do the following steps:
+
+```bash
+wget https://raw.githubusercontent.com/nikochiko/autosaved/main/autosaved.service
+
+# vim/nano/vscode into autosaved.service
+# change these two lines to your own username
+User=kaustubh # your own pc username
+Group=kaustubh # your own pc username
+
+# once that's done, close the editor
+# move the service to systemd's home
+sudo mv autosaved.service /etc/systemd/system/autosaved.service
+
+# enable and start the service
+sudo systemctl enable autosaved.service
+sudo systemctl start autosaved.service
+
+# to check whether it's running properly, you can run
+sudo systemctl status autosaved.service
+```
+
 ### Configuration
 
 The configuration too comes with very usable defaults. `autosaved` will traverse all the `watched` repositories
