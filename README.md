@@ -108,3 +108,7 @@ from HEAD. It will show the commits made by user more widely,
 and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
+
+### LICENSE
+
+This project is licensed under GPLv3. See [LICENSE](LICENSE) for more.
