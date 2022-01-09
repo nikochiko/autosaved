@@ -111,6 +111,17 @@ and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
 
+### Recovery
+
+To recover something, you can grab its commit hash from `asdi list` and run `asdi restore <commit-hash>`. 
+
+I have done it in this video here: https://www.youtube.com/watch?v=VFgLyTNwHu4
+
+### Screenshots
+
+* Listing
+![image](https://user-images.githubusercontent.com/37668193/148672208-41036174-9534-4ea3-8df8-3e5951b68c35.png)
+
 ### LICENSE
 
 This project is licensed under GPLv3. See [LICENSE](LICENSE) for more.
