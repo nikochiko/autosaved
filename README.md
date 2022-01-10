@@ -31,7 +31,7 @@ That's all about it. The only other setup now is to start the daemon ;)
 
 To get it working, you'll have to setup the daemon first. It can be
 activated with `asdi start` in any normal terminal, but you may want to run it on
-`systemd` or `screen` to keep it alive through failures and restarts.
+[`systemd`](#systemd) or `screen` to keep it alive through failures and restarts.
 
 Once that's done you're all ready. Just `cd` into your project
 directory and run `asdi watch`, this will notify the daemon to start
@@ -40,7 +40,7 @@ watching the directory.
 It does so by adding the repository's full path to the configuration (by default ~/.autosaved.yaml), which gets picked up by
 Viper on the fly.
 
-### Systemd configuration
+#### Systemd
 
 A sample systemd unit file can be found here: [autosaved.service](autosaved.service). 
 
@@ -110,6 +110,30 @@ from HEAD. It will show the commits made by user more widely,
 and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
+
+### How does it work?
+
+After a repository is added to the watching list with `asdi watch`, the autosave daemon will poll it every $checking_interval
+seconds for uncommitted changes.
+
+If it finds any, it will commit the changes to a parallel branch. This branch will be named like `_asd_<commit-hash>`. Any
+further changes that are made with the same commit as HEAD (i.e. the checked out branch), it will save those into branch
+as new commits. The branch names start with `_a..` so that when sorted alphabetically these will sit at the top and you can then
+filter down to your relevant branches when you list the branches.
+
+It does all this without changing your worktree or staging index. As of now, it will very quickly checkout to a new branch,
+commit everything, checkout original branch and restore the index. It uses `go-git` for all the Git operations, which is a pure
+Go implementation of Git, independent of the Git that is running on the host system. This makes sure that there won't be
+unpredicted bugs due to difference in Git versions.
+
+The restore process is simple. It does two things:
+1. Checkout to the commit checkpoint. This will restore the filesystem to checkpoint.
+    * Note: In version 0.1, this is a forced-checkout, i.e. it will overwrite local changes in favor of the branch that
+is being checked out. This behavior may change in the future 
+to throw an error when user has unstaged changes.
+2. [Keep-checkout](https://pkg.go.dev/github.com/go-git/go-git/v5#CheckoutOptions) to the original branch. This will
+checkout the original branch now, while keeping all the changes that are
+currently in the filesystem. This is the opposite of force. It will keep changes in the worktree and staging during checkout.
 
 ### LICENSE
 
