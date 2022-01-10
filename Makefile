@@ -1,13 +1,10 @@
 BIN=./bin
 
-.PHONY: all build deploy-local
+.PHONY: all build
 
 default: all
 
-all: build deploy-local
-
-deploy-local:
-	mv $(BIN)/asdi ~/go/bin/
+all: build
 
 build:
 	mkdir -p $(BIN)
