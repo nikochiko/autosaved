@@ -3,7 +3,7 @@ package cmd
 import (
 	"strconv"
 
-	"git.kausm.in/kaustubh/autosaved/core"
+	"github.com/nikochiko/autosaved/core"
 	"github.com/spf13/cobra"
 )
 

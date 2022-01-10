@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"git.kausm.in/kaustubh/autosaved/core"
+	"github.com/nikochiko/autosaved/core"
 	"github.com/fsnotify/fsnotify"
 	"github.com/nightlyone/lockfile"
 	"github.com/spf13/viper"

@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"git.kausm.in/kaustubh/autosaved/daemon"
+	"github.com/nikochiko/autosaved/daemon"
 	"github.com/spf13/cobra"
 )
 

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"git.kausm.in/kaustubh/autosaved/core"
+	"github.com/nikochiko/autosaved/core"
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )

@@ -23,7 +23,7 @@ import (
 const AutosavedBranchPrefix = "_asd_"
 
 const (
-	autosavedSignatureName  = "git.kausm.in/kaustubh/autosaved"
+	autosavedSignatureName  = "github.com/nikochiko/autosaved"
 	autosavedSignatureEmail = "autosaved@example.com"
 )
 
