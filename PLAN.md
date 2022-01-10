@@ -13,14 +13,14 @@
 
 ### Interface
 
-* `asdi` command (short for **a**uto**s**ave**d** **i**nterface):
-    * `asdi init`: initialises `autosaved` in a particular directory
-    * `asdi list [X=10]`: list last X autosaves, with number
-    * `asdi restore commit-hash`: restores the Nth checkpoint (with confirmation prompt) or
+* `autosaved` command (short for **a**uto**s**ave**d** **i**nterface):
+    * `autosaved init`: initialises `autosaved` in a particular directory
+    * `autosaved list [X=10]`: list last X autosaves, with number
+    * `autosaved restore commit-hash`: restores the Nth checkpoint (with confirmation prompt) or
     the checkpoint with given timestamp
-    * `asdi save`: save current state as a checkpoint
-    * `asdi diff [N]|[Timestamp]`: diff `autosaved` checkpoint with current state of the index
-    * [Optional] `asdi diff [N1|T2]..[N2|T2] -- <paths>`: diff 2 of `autosaved` checkpoints
+    * `autosaved save`: save current state as a checkpoint
+    * `autosaved diff [N]|[Timestamp]`: diff `autosaved` checkpoint with current state of the index
+    * [Optional] `autosaved diff [N1|T2]..[N2|T2] -- <paths>`: diff 2 of `autosaved` checkpoints
 
 * Configuration:
     * YAML configuration file
@@ -38,27 +38,27 @@
 
 ### Implementation:
 
-* [x] Get `asdi watch` to work correctly
+* [x] Get `autosaved watch` to work correctly
     * [x] Create first checkpoint
     * [x] Notify Daemon to watch this directory also (or start a background process itself to keep watching it)
-* [x] Implement `asdi save`, and helpers for it which can be reused in other places (like init)
+* [x] Implement `autosaved save`, and helpers for it which can be reused in other places (like init)
     * [x] Should save all files except .git, with the current timestamp
-* [x] Implement `asdi list`
+* [x] Implement `autosaved list`
 * [x] Autosave Daemon
-    * [x] `asdi start`
-    * [x] `asdi stop`
-    * ~~[ ] `asdi restart`~~ not need, config updates happen on the fly!
+    * [x] `autosaved start`
+    * [x] `autosaved stop`
+    * ~~[ ] `autosaved restart`~~ not need, config updates happen on the fly!
     * [x] lockfile
     * [x] configuration
-* [ ] ~~`asdi setup`: one time setup for getting config ready~~
+* [ ] ~~`autosaved setup`: one time setup for getting config ready~~
 * [ ] [LATER] `.autosaved.yaml` for each repository
 
-* `asdi start`
+* `autosaved start`
     * Will read watched files from viper config, iterating over it at intervals of checkInterval
     * Use select-case to block while listening for config and sleep timeout
 
 ### TODO
 * [ ] Don't autocommit when branch checkout out is autosaved's branch
-* [x] `asdi stop` - send SIGTERM to lock process
-* [ ] ~~`asdi restart` - stop and start~~ not need, config updates happen on the fly!
-* [x] `asdi watch` - add pwd to config
+* [x] `autosaved stop` - send SIGTERM to lock process
+* [ ] ~~`autosaved restart` - stop and start~~ not need, config updates happen on the fly!
+* [x] `autosaved watch` - add pwd to config

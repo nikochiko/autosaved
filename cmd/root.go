@@ -22,13 +22,13 @@ var globalViper = viper.GetViper()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "asdi",
+	Use:   "autosaved",
 	Short: "Never lose your work. Code without worrying",
 	Long: `autosaved, pronounced autosave-d (for autosave daemon) is a utility written in Go to autosave progress on code projects.
 
 It uses the go-git package to save snapshots without interfering the normal Git flow - branches that are to be pushed upstream, HEAD, or the Git index.
 
-It provides an interface called asdi (short for autosaved interface), which can be used to interact with the daemon.`,
+It provides an interface called autosaved (short for autosaved interface), which can be used to interact with the daemon.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
