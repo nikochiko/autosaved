@@ -138,6 +138,17 @@ to throw an error when user has unstaged changes.
 checkout the original branch now, while keeping all the changes that are
 currently in the filesystem. This is the opposite of force. It will keep changes in the worktree and staging during checkout.
 
+### Recovery
+
+To recover something, you can grab its commit hash from `asdi list` and run `asdi restore <commit-hash>`. 
+
+I have done it in this video here: https://www.youtube.com/watch?v=VFgLyTNwHu4
+
+### Screenshots
+
+* Listing
+![image](https://user-images.githubusercontent.com/37668193/148672208-41036174-9534-4ea3-8df8-3e5951b68c35.png)
+
 ### LICENSE
 
 This project is licensed under GPLv3. See [LICENSE](LICENSE) for more.
