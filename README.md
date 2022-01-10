@@ -111,20 +111,23 @@ and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
 
-### How does it work?
+### How it works...
 
 After a repository is added to the watching list with `asdi watch`, the autosave daemon will poll it every $checking_interval
 seconds for uncommitted changes.
 
 If it finds any, it will commit the changes to a parallel branch. This branch will be named like `_asd_<commit-hash>`. Any
-further changes that are made with the same commit as HEAD (i.e. the checked out branch), it will save those into branch
-as new commits. The branch names start with `_a..` so that when sorted alphabetically these will sit at the top and you can then
-filter down to your relevant branches when you list the branches.
+further changes that you make without committing manually will
+go into newer commits on this parallel branch.
 
-It does all this without changing your worktree or staging index. As of now, it will very quickly checkout to a new branch,
-commit everything, checkout original branch and restore the index. It uses `go-git` for all the Git operations, which is a pure
-Go implementation of Git, independent of the Git that is running on the host system. This makes sure that there won't be
-unpredicted bugs due to difference in Git versions.
+The branch names start with `_a..` so that when sorted alphabetically
+these will sit at the top and you can then
+scroll down to your relevant branches when you list with `git branch`. 
+
+It uses `go-git` for all the Git operations, which is a pure
+Go implementation of Git. It is independent of the local
+Git being used on the user's system. This shields against
+unforeseen bugs caused due to differing versions of Git.
 
 The restore process is simple. It does two things:
 1. Checkout to the commit checkpoint. This will restore the filesystem to checkpoint.
