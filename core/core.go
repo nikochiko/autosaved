@@ -525,21 +525,6 @@ func (asd *AsdRepository) restoreCheckpoint(commit plumbing.Hash) error {
 		return err
 	}
 
-	// git reset soft - will set HEAD to original HEAD
-	// without changing the worktree (i.e. filesystem)
-	// resetOpts := git.ResetOptions{
-	// 	Mode:   git.SoftReset,
-	// 	Commit: head.Hash(),
-	// }
-	// err = w.Reset(&resetOpts)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// coOpts = git.CheckoutOptions{
-	// 	Branch: head.Name(),
-	// }
-	// err = w.Checkout(&coOpts)
 	// git checkout to head with keep
 	err = checkoutWithKeep(w, head.Name())
 	if err != nil {
