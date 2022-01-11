@@ -10,8 +10,8 @@ It provides a command line interface (called `asdi` in v0.1, `autosaved` after t
 
 If you have Golang setup, you can directly install it with `go install github.com/nikochiko/autosaved`
 
-You can download a binary from the v0.1 release:
-https://github.com/nikochiko/autosaved/releases/tag/v0.1 for your architecture and OS
+You can download a binary from the v0.2 release:
+https://github.com/nikochiko/autosaved/releases/tag/v0.2 for your architecture and OS
 
 Currently, I have only added 3 binaries for linux/amd64, windows/amd64, and darwin/amd64.
 
