@@ -6,7 +6,18 @@ It uses the `go-git` package to save snapshots without interfering the normal Gi
 
 It provides a command line interface (called `asdi` in v0.1, `autosaved` after that), which can be used to interact with the daemon.
 
-### Installation
+## Usage
+
+Start the daemon with `autosaved start`. After this you can add repositories to its watchlist by running `autosaved watch` from the project
+directory. That will enable automatically saving the uncommitted changes.
+
+## Recovery
+
+To recover something, you can grab its commit hash from `autosaved list` and run `autosaved restore <commit-hash>`. 
+
+I have done it in this video here: https://www.youtube.com/watch?v=VFgLyTNwHu4
+
+## Installation
 
 If you have Golang setup, you can directly install it with `go install github.com/nikochiko/autosaved`
 
@@ -26,8 +37,6 @@ Once you have the binary, you can just `mv` it to a bin/ folder.
 # for example
 sudo mv autosaved_linux_amd64 /usr/local/bin/autosaved
 ```
-
-That's all about it. The only other setup now is to start the daemon ;)
 
 ### Setup
 
@@ -68,10 +77,10 @@ sudo systemctl start autosaved.service
 sudo systemctl status autosaved.service
 ```
 
-### Configuration
+## Configuration
 
 The configuration too comes with very usable defaults. `autosaved` will traverse all the `watched` repositories
-every 2 minutes by default, although this can be changed. This is defined by the `checking_interval` config option.
+every 2 minutes by default. This is defined by the `checking_interval` config option.
 
 The other option is `after_every:`, this option defines how long
 after one commit/autosave should we wait until we autosave the next time in each repository.
@@ -92,7 +101,7 @@ repositories:
     - /home/kaustubh/Desktop/projects/autosaved
 ```
 
-### Commands
+## Commands
 
 * `autosaved start`: starts the daemon. the daemon has to run for automatic saving to work
 * `autosaved stop`: stops the daemon. other processes can find the daemon's PID by using the lockfile. Graceful exit of the daemon
@@ -113,7 +122,7 @@ and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
 
-### How it works...
+## How it works...
 
 After a repository is added to the watching list with `autosaved watch`, the autosave daemon will poll it every $checking_interval
 seconds for uncommitted changes.
@@ -140,13 +149,7 @@ to throw an error when user has unstaged changes.
 checkout the original branch now, while keeping all the changes that are
 currently in the filesystem. This is the opposite of force. It will keep changes in the worktree and staging during checkout.
 
-### Recovery
-
-To recover something, you can grab its commit hash from `autosaved list` and run `autosaved restore <commit-hash>`. 
-
-I have done it in this video here: https://www.youtube.com/watch?v=VFgLyTNwHu4
-
-### Screenshots
+## Screenshots
 
 * Listing
 ![image](https://user-images.githubusercontent.com/37668193/148672208-41036174-9534-4ea3-8df8-3e5951b68c35.png)
