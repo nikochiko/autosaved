@@ -8,8 +8,11 @@ It provides a command line interface (called `asdi` in v0.1, `autosaved` after t
 
 ## Usage
 
-Start the daemon with `autosaved start`. After this you can add repositories to its watchlist by running `autosaved watch` from the project
-directory. That will enable automatically saving the uncommitted changes.
+You can start the daemon with `autosaved start` or `autosaved start &` if you want it to run in the background. After this you can set a
+repository to being watched by running `autosaved watch` from the project directory.
+
+After that, whenever `autosaved` finds uncommitted changes in your Git repository, it will save them on a parallel branch which you can
+easily restore. Find more information in [How it works](#how-it-works).
 
 ## Recovery
 
@@ -122,7 +125,7 @@ and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
 is easy to make sense of the list.
 
-## How it works...
+## How it works
 
 After a repository is added to the watching list with `autosaved watch`, the autosave daemon will poll it every $checking_interval
 seconds for uncommitted changes.
