@@ -106,20 +106,19 @@ repositories:
 
 ## Commands
 
-* `autosaved start`: starts the daemon. the daemon has to run for automatic saving to work
-* `autosaved stop`: stops the daemon. other processes can find the daemon's PID by using the lockfile. Graceful exit of the daemon
-should be done by sending SIGTERM to the process.
-* `autosaved save`: manually saves progress in a repository. this may be
+* `autosaved start`: Starts the daemon
+* `autosaved stop`: Stops the daemon gracefully
+* `autosaved save`: Saves uncommitted changes in a repository manually. This may be
 useful when you are not using the daemon, or when you are too
-impatient to wait for its next cycle.
-* `autosaved restore <commit-hash>`: this restores the changes from a checkpoint committed by autosaved. the checkpoints stay
+impatient to wait for its next cycle. This command doesn't need the daemon to be running.
+* `autosaved restore <commit-hash>`: Restores the changes from a checkpoint committed by autosaved. The checkpoints stay
 outside the main refs, and don't interfere with the staging
-index or current branch. their names start with `_asd_` so that
-in an alphabetical list of branches, you can scroll down and find
-relevant information.
-* `autosaved watch`: start watching a file path. this will add the repository's path to the config file. If the daemon is active,
+index or current branch. 
+* `autosaved watch`: Starts watching a file path. This will add the repository's path to the config file. If the daemon is active,
 it won't need a restart to pick this up.
-* `autosaved list <N>`: shows N (by default, 10) max commits starting
+* `autosaved unwatch`: Opposite of watch. This will remove the repository's path from the config file. If the daemon is active,
+it won't need a restart to pick this up.
+* `autosaved list <N>`: Shows N (by default, 10) max commits starting
 from HEAD. It will show the commits made by user more widely,
 and then the autosave commits that were made on top of that
 commit will be displayed like bullet points and numbered so it
