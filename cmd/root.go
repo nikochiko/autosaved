@@ -67,6 +67,8 @@ func init() {
 
 	rootCmd.AddCommand(watchCmd)
 
+	rootCmd.AddCommand(unwatchCmd)
+
 	rootCmd.AddCommand(listCmd)
 
 	rootCmd.AddCommand(restoreCmd)
