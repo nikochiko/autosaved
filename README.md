@@ -1,4 +1,4 @@
-# autosaved
+# autosave[d]
 
 autosaved, pronounced autosave-d (for autosave daemon) is a utility written in Go to autosave progress on code projects.
 
