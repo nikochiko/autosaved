@@ -59,7 +59,7 @@ func init() {
 	viper.BindPFlag("after_every.seconds", rootCmd.PersistentFlags().Lookup("after_seconds"))
 
 	rootCmd.AddCommand(saveCmd)
-	saveCmd.Flags().StringP("message", "m", "manual save", "commit message (default: 'manual save')")
+	saveCmd.Flags().StringP("message", "m", "manual save", "commit message")
 
 	rootCmd.AddCommand(startCmd)
 
@@ -70,6 +70,7 @@ func init() {
 	rootCmd.AddCommand(unwatchCmd)
 
 	rootCmd.AddCommand(listCmd)
+	listCmd.Flags().Int("autosaves", defaultAutosaves, "maximum number of autosaves to display per commit")
 
 	rootCmd.AddCommand(restoreCmd)
 }

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/nikochiko/autosaved/core"
 	"github.com/go-git/go-git/v5"
+	"github.com/nikochiko/autosaved/core"
 	"github.com/spf13/cobra"
 )
 
