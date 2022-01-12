@@ -10,13 +10,11 @@ import (
 const defaultAutosaves = 5
 
 var listCmd = &cobra.Command{
-	Use:   "list [--autosaves N] [n]",
+	Use:   "list [n]",
 	Short: "Lists the last n (default: 10) commits and the related saves",
 	Long: `Gets a list of the commits made by the user starting from HEAD,
 along with the related autosaves / manual saves done using autosaved. This
-format helps in identifying the relevant autosaves and in restoring to one.
-
---autosaves: number specifying how many max autosaves to show per commit (default: 5)`,
+format helps in identifying the relevant autosaves and in restoring to one.`,
 	Args: cobra.MaximumNArgs(1),
 	Run:  list,
 }
