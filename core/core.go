@@ -33,6 +33,7 @@ var (
 	ErrUserUnbornHead            = errors.New("autosaved cannot continue with an unborn head. please make an initial commit and try again")
 	ErrInvalidHash               = errors.New("the hash submitted is not a valid hash")
 	ErrUserDidNotConfirm         = errors.New("user didn't confirm yes")
+	ErrAutosavedBranchNotFound   = errors.New("autosaved branch not found for this commit")
 )
 
 type AsdRepository struct {
@@ -137,7 +138,7 @@ func (asd *AsdRepository) Save(msg string) error {
 }
 
 func (asd *AsdRepository) checkoutAutosavedBranch(w *git.Worktree, head *plumbing.Reference) (err error) {
-	branchName := getAutosavedBranchName(head)
+	branchName := getAutosavedBranchName(head.Hash())
 
 	// try to checkout the branch
 	coOpts := git.CheckoutOptions{
@@ -158,10 +159,8 @@ func (asd *AsdRepository) checkoutAutosavedBranch(w *git.Worktree, head *plumbin
 	return w.Checkout(&coOpts)
 }
 
-func getAutosavedBranchName(head *plumbing.Reference) string {
-	headHash := head.Hash()
-
-	return AutosavedBranchPrefix + headHash.String()
+func getAutosavedBranchName(commitHash plumbing.Hash) string {
+	return AutosavedBranchPrefix + commitHash.String()
 }
 
 func checkoutWithKeep(w *git.Worktree, branchRef plumbing.ReferenceName) error {
@@ -349,7 +348,7 @@ func (asd *AsdRepository) getLastAutosavedCommitForCurrentBranch() (*object.Comm
 		return nil, err
 	}
 
-	branch := getAutosavedBranchName(head)
+	branch := getAutosavedBranchName(head.Hash())
 	refname := plumbing.NewBranchReferenceName(branch)
 
 	ref, err := r.Storer.Reference(refname)
@@ -370,40 +369,14 @@ func (asd *AsdRepository) getLastAutosavedCommitForCurrentBranch() (*object.Comm
 	return commit, nil
 }
 
-func (asd *AsdRepository) List(limit int) error {
+func (asd *AsdRepository) List(limit int, asdLimit int) error {
 	r := asd.Repository
-
-	// asdCommit, err := asd.getLastAutosavedCommitForCurrentBranch()
-	// if err != nil {
-	// 	if !errors.Is(err, ErrAutosavedBranchNotCreated) {
-	// 		return err
-	// 	}
-	// }
 
 	userCommit, err := asd.getLastUserCommitOnCurrentBranch()
 	if err != nil {
 		return err
 	}
 
-	// var fromCommit *object.Commit
-	// if asdCommit == nil {
-	// 	fromCommit = userCommit
-	// } else {
-	// 	isAncestor, err := userCommit.IsAncestor(asdCommit)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	if isAncestor {
-	// 		fromCommit = asdCommit
-	// 	} else {
-	// 		fromCommit = userCommit
-	// 	}
-	// }
-
-	serialNumber := 0
-
-	// iter := object.NewCommitPostorderIter(fromCommit, nil)
 	iter := object.NewCommitIterBSF(userCommit, nil, nil)
 	for i := 0; i < limit; i++ {
 		c, err := iter.Next()
@@ -413,26 +386,22 @@ func (asd *AsdRepository) List(limit int) error {
 
 		fmt.Println(formatCommit(0, c))
 
-		asdBranchName := AutosavedBranchPrefix + c.Hash.String()
-
-		refName := plumbing.NewBranchReferenceName(asdBranchName)
-		ref, err := r.Reference(refName, true)
+		asdBranchRef, err := getAutosavedBranchRefForCommit(r, c)
 		if err != nil {
-			if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			if errors.Is(err, ErrAutosavedBranchNotFound) {
 				continue
 			}
 
 			return err
 		}
 
-		asdFromCommit, err := r.CommitObject(ref.Hash())
+		asdFromCommit, err := r.CommitObject(asdBranchRef.Hash())
 		if err != nil {
 			return err
 		}
 
 		asdIter := object.NewCommitIterBSF(asdFromCommit, nil, nil)
-		fmt.Println("\tAutosaves:")
-		for i = i; i < limit; i++ {
+		for j := 1; j <= asdLimit+1; j++ {
 			asdCommit, err := asdIter.Next()
 			if err != nil {
 				return err
@@ -442,17 +411,19 @@ func (asd *AsdRepository) List(limit int) error {
 				break
 			}
 
-			serialNumber++
-			fmt.Println(shortFormatCommit("\t", serialNumber, asdCommit))
+			if j == 1 {
+				fmt.Println("\tAutosaves:")
+			}
+
+			if j == asdLimit+1 {
+				// if there are more...
+				fmt.Println("\t...\n")
+				break
+			}
+
+			fmt.Println(shortFormatCommit("\t", j, asdCommit))
 		}
 	}
-
-	// 	if c.Committer.Name == autosavedSignatureName {
-	// 		fmt.Println(shortFormatCommit("\t", serialNumber, c))
-	// 	} else {
-	// 		fmt.Println(formatCommit(0, c))
-	// 	}
-	// }
 
 	return nil
 }
@@ -472,27 +443,6 @@ func (asd *AsdRepository) RestoreByCommitHash(hashString string) error {
 		return asd.restoreCheckpoint(hash)
 	} else {
 		return ErrUserDidNotConfirm
-	}
-}
-
-func askForConfirmation(s string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		fmt.Printf("%s [y/n]: ", s)
-
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		response = strings.ToLower(strings.TrimSpace(response))
-
-		if response == "y" || response == "yes" {
-			return true
-		} else if response == "n" || response == "no" {
-			return false
-		}
 	}
 }
 
@@ -534,12 +484,30 @@ func (asd *AsdRepository) restoreCheckpoint(commit plumbing.Hash) error {
 	return nil
 }
 
+func getAutosavedBranchRefForCommit(r *git.Repository, c *object.Commit) (*plumbing.Reference, error) {
+	branchName := getAutosavedBranchName(c.Hash)
+	refName := plumbing.NewBranchReferenceName(branchName)
+
+	ref, err := r.Reference(refName, true)
+	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return nil, ErrAutosavedBranchNotFound
+		}
+
+		return nil, err
+	}
+
+	return ref, nil
+}
+
 func formatCommit(serialNumber int, commit *object.Commit) string {
-	commitLine := color.New(color.FgYellow).Sprintf(fmt.Sprintf("%d\tcommit\t%s", serialNumber, commit.Hash.String()))
+	commitLine := color.New(color.FgYellow).Sprintf(fmt.Sprintf("%d\tcommit %s", serialNumber, commit.Hash.String()))
 	authorLine := fmt.Sprintf("Author:\t%s <%s>", commit.Author.Name, commit.Author.Email)
-	// dateLine := fmt.Sprintf("When:\t%s", commit.Author.When.Format(time.UnixDate))
-	dateLine := fmt.Sprintf("Date:\t%s", timeago.English.Format(commit.Author.When))
+	dateLine := fmt.Sprintf("When:\t%s", timeago.English.Format(commit.Author.When))
 	msgLine := fmt.Sprintf("\t%s", commit.Message)
+	if msgLine[len(msgLine)-1] != '\n' {
+		msgLine += "\n"
+	}
 
 	return fmt.Sprintf("%s\n%s\n%s\n\n%s", commitLine, authorLine, dateLine, msgLine)
 }
@@ -548,6 +516,30 @@ func shortFormatCommit(prefix string, serialNumber int, commit *object.Commit) s
 	commitLine := prefix + color.New(color.FgYellow).Sprintf("%d\t%s", serialNumber, commit.Hash.String())
 	whenLine := prefix + fmt.Sprintf("When:\t%s", timeago.English.Format(commit.Author.When))
 	msgLine := prefix + fmt.Sprintf("\t%s", commit.Message)
+	if msgLine[len(msgLine)-1] != '\n' {
+		msgLine += "\n"
+	}
 
-	return fmt.Sprintf("%s\n%s\n%s\n", commitLine, whenLine, msgLine)
+	return fmt.Sprintf("%s\n%s\n%s", commitLine, whenLine, msgLine)
+}
+
+func askForConfirmation(s string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("%s [y/n]: ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
 }

@@ -70,6 +70,7 @@ func init() {
 	rootCmd.AddCommand(unwatchCmd)
 
 	rootCmd.AddCommand(listCmd)
+	listCmd.Flags().Int("autosaves", defaultAutosaves, fmt.Sprintf("maximum number of autosaves to display per commit (default: %d)", defaultAutosaves))
 
 	rootCmd.AddCommand(restoreCmd)
 }
