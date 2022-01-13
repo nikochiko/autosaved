@@ -51,7 +51,7 @@ Once that's done you're all ready. Just `cd` into your project
 directory and run `autosaved watch`, this will notify the daemon to start
 watching the directory.
 
-It does so by adding the repository's full path to the configuration (by default ~/.autosaved.yaml), which gets picked up by
+It does so by adding the repository's full path to the configuration (by default `~/.config/.autosaved.yaml` or under the path define by environment variable `XDG_CONFIG_HOME`), which gets picked up by
 Viper on the fly.
 
 #### Systemd
