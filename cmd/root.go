@@ -75,10 +75,57 @@ func init() {
 	rootCmd.AddCommand(restoreCmd)
 }
 
-func initConfig() {
-	// find shome directory
-	home, err := os.UserHomeDir()
+// get one of available config path from environment variable, $HOME/.config, $HOME
+func getConfigHomePath() string {
+	if xdg_home := os.Getenv("XDG_CONFIG_HOME"); xdg_home != "" {
+		return xdg_home
+	}
+
+	userHome, err := os.UserHomeDir()
 	cobra.CheckErr(err)
+
+	// default XDG_CONFIG_HOME "$HOME/.config"
+	configHome := filepath.Join(userHome, ".config")
+	// check directory exist
+	if _, err := os.Stat(configHome); err == nil {
+		return configHome
+	}
+
+	// default path: user's home
+	return userHome
+}
+
+// compatible previous version
+// migrate old config path into new path
+func moveOldConfigToNewDir(newConfigDir string) {
+	userHome, err := os.UserHomeDir()
+	cobra.CheckErr(err)
+
+	oldConfigPath := filepath.Join(userHome, ".autosaved.yaml")
+	// check old config exist or not, skip if it not exist
+	if _, err := os.Stat(oldConfigPath); os.IsNotExist(err) {
+		return
+	}
+
+	newConfigPath := filepath.Join(newConfigDir, ".autosaved.yaml")
+
+	if oldConfigPath == newConfigPath {
+		return
+	}
+
+	// check new config exist or not, skip if it exist
+	if _, err := os.Stat(newConfigPath); os.IsExist(err) {
+		return
+	}
+
+	// mv old config to new config path
+	err = os.Rename(oldConfigPath, newConfigPath)
+	cobra.CheckErr(err)
+}
+
+func initConfig() {
+	home := getConfigHomePath()
+	moveOldConfigToNewDir(home)
 
 	if cfgFile != "" {
 		// set config file from flag
