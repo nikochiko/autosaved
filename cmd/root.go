@@ -77,8 +77,8 @@ func init() {
 
 // get one of available config path from environment variable, $HOME/.config, $HOME
 func getConfigHomePath() string {
-	if xdg_home := os.Getenv("XDG_CONFIG_HOME"); xdg_home != "" {
-		return xdg_home
+	if xdgHome := os.Getenv("XDG_CONFIG_HOME"); xdgHome != "" {
+		return xdgHome
 	}
 
 	userHome, err := os.UserHomeDir()
