@@ -75,7 +75,7 @@ func init() {
 	rootCmd.AddCommand(restoreCmd)
 }
 
-// get one of available config path from environment variable, $HOME/.config, $HOME
+// get one of available config path from environment variable XDG_CONFIG_HOME or default path $HOME/.config
 func getConfigHomePath() string {
 	if xdgHome := os.Getenv("XDG_CONFIG_HOME"); xdgHome != "" {
 		return xdgHome
@@ -85,14 +85,12 @@ func getConfigHomePath() string {
 	cobra.CheckErr(err)
 
 	// default XDG_CONFIG_HOME "$HOME/.config"
+	// create if not exist
 	configHome := filepath.Join(userHome, ".config")
-	// check directory exist
-	if _, err := os.Stat(configHome); err == nil {
-		return configHome
-	}
+	err = os.MkdirAll(configHome, os.ModePerm)
+	cobra.CheckErr(err)
 
-	// default path: user's home
-	return userHome
+	return configHome
 }
 
 // compatible previous version
